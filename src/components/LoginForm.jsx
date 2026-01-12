@@ -118,7 +118,6 @@ export default function LoginForm({ onLogin }) {
           {/* Hint - Development Only */}
           <div className="mt-6 pt-6 border-t border-primary-700/30">
             <p className="text-primary-500 text-xs text-center font-mono">
-              DEV: admin / admin
             </p>
           </div>
         </form>

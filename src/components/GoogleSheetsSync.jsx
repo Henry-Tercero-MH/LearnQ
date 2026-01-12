@@ -17,28 +17,23 @@ if (typeof window !== 'undefined') {
   }
 }
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { MdSync, MdCloud, MdCloudOff } from 'react-icons/md';
 
 
-// XOR obfuscation helpers
-function xorEncryptDecrypt(str, key) {
-  let result = '';
-  for (let i = 0; i < str.length; i++) {
-    result += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-  }
-  return result;
-}
 
-// Obfuscated credentials (XOR with key 'learnq2026')
-const XOR_KEY = 'learnq2026';
-const OBFUSCATED_API_KEY = '\u000f\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b';
-const OBFUSCATED_CLIENT_ID = '5\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b\u001e\u001e\u001e\u001b\u001b\u001b.apps.googleusercontent.com';
+
+
+// Credenciales directas para Google API
+const GOOGLE_API_KEY = 'AIzaSyA8CdD8RP4HjD1zN00-qp3dxAD4OKzvWb4';
+const GOOGLE_CLIENT_ID = '838075476269-oi80gmn3ej0f2trhpcqm4e9f4rqf8em8.apps.googleusercontent.com';
 
 // Google Sheets API Configuration
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
 
 
 export default function GoogleSheetsSync({ expenses, onImport }) {
+  const { importCredentials } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   // Sheet ID por defecto:
@@ -79,7 +74,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
   const initializeGapi = () => {
     window.gapi.load('client', async () => {
       await window.gapi.client.init({
-        apiKey: xorEncryptDecrypt(OBFUSCATED_API_KEY, XOR_KEY),
+        apiKey: GOOGLE_API_KEY,
         discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
       });
       setGapiReady(true);
@@ -102,7 +97,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
 
       // Use Google Identity Services (new method)
       const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: xorEncryptDecrypt(OBFUSCATED_CLIENT_ID, XOR_KEY),
+        client_id: GOOGLE_CLIENT_ID,
         scope: SCOPES,
         callback: (response) => {
           if (response.error) {
@@ -177,6 +172,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
     }
   };
 
+  // Pull expenses
   const syncFromSheets = async () => {
     if (!sheetId) {
       alert('Please enter a Google Sheet ID');
@@ -186,20 +182,16 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
     try {
       setIsLoading(true);
 
-      // Read data from sheets
+      // Read data from sheets (expenses)
       const response = await window.gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
         range: 'Sheet1!A:C',
       });
-
       const rows = response.result.values;
-
       if (!rows || rows.length === 0) {
         alert('No data found in the sheet');
         return;
       }
-
-      // Skip header row and parse data
       const importedExpenses = rows.slice(1)
         .filter(row => row[0] && row[1] && row[2])
         .map(row => ({
@@ -207,17 +199,43 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
           category: String(row[1]).trim(),
           date: String(row[2]).trim()
         }));
-
       if (importedExpenses.length === 0) {
         alert('No valid transactions found in the sheet');
         return;
       }
-
       onImport(importedExpenses);
       alert(`Successfully imported ${importedExpenses.length} transactions from Google Sheets!`);
     } catch (error) {
       console.error('Error importing from Google Sheets:', error);
       alert('Failed to import from Google Sheets. Make sure the Sheet ID is correct and you have view permissions.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Pull credentials
+  const syncCredentialsFromSheet = async () => {
+    if (!sheetId) {
+      alert('Please enter a Google Sheet ID');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      // Expect credentials in Sheet2!A:B (header: username, password)
+      const response = await window.gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: sheetId,
+        range: 'Sheet2!A:B',
+      });
+      const rows = response.result.values;
+      if (!rows || rows.length === 0) {
+        alert('No credentials found in Sheet2');
+        return;
+      }
+      importCredentials(rows);
+      alert(`Imported ${rows.length - 1} credentials from Sheet2!`);
+    } catch (error) {
+      console.error('Error importing credentials:', error);
+      alert('Failed to import credentials. Make sure Sheet2 exists and is formatted correctly.');
     } finally {
       setIsLoading(false);
     }
@@ -270,7 +288,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={syncToSheets}
               disabled={isLoading || !sheetId}
@@ -286,6 +304,14 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
             >
               <MdSync className="w-4 h-4 rotate-180" />
               <span>Pull</span>
+            </button>
+            <button
+              onClick={syncCredentialsFromSheet}
+              disabled={isLoading || !sheetId}
+              className="btn-secondary text-xs py-2 flex items-center justify-center gap-1"
+            >
+              <MdShieldKeyholeLine className="w-4 h-4" />
+              <span>Creds</span>
             </button>
           </div>
 
