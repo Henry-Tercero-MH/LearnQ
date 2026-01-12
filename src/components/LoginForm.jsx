@@ -7,17 +7,23 @@ export default function LoginForm({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isShaking, setIsShaking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    const success = onLogin(username, password);
-
-    if (!success) {
-      setError('Invalid credentials');
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 500);
+    setIsLoading(true);
+    try {
+      const success = await onLogin(username, password);
+      if (!success) {
+        setError('Invalid credentials');
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+      }
+    } catch (err) {
+      setError('Error validating credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,10 +115,20 @@ export default function LoginForm({ onLogin }) {
           {/* Submit Button */}
           <button
             type="submit"
-            className="btn-primary w-full mt-8 flex items-center justify-center gap-3 group"
+            className="btn-primary w-full mt-8 flex items-center justify-center gap-3 group disabled:opacity-60"
+            disabled={isLoading}
           >
-            <span>Access System</span>
-            <HiArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            {isLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-4 w-4 border-2 border-accent-gold border-t-transparent rounded-full animate-spin"></span>
+                Validating...
+              </span>
+            ) : (
+              <>
+                <span>Access System</span>
+                <HiArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
           </button>
 
           {/* Hint - Development Only */}
