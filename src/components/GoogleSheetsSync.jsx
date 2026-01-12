@@ -36,6 +36,9 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
   const { importCredentials } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // Credenciales Google API directas
+  const GOOGLE_API_KEY = 'AIzaSyA8CdD8RP4HjD1zN00-qp3dxAD4OKzvWb4';
+  const GOOGLE_CLIENT_ID = '838075476269-oi80gmn3ej0f2trhpcqm4e9f4rqf8em8.apps.googleusercontent.com';
   // Sheet ID por defecto:
   const [sheetId, setSheetId] = useState('1x4CsAtGdlJvGBOTC_ZdgeOxnsqPPNAfYvM1VD6dGeMY');
   const [gapiReady, setGapiReady] = useState(false);
