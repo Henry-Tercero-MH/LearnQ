@@ -1,10 +1,11 @@
 import * as XLSX from 'xlsx';
 import { MdDownload } from 'react-icons/md';
+import { toast } from 'react-toastify';
 
 export default function ExcelExport({ expenses }) {
   const handleExport = () => {
     if (expenses.length === 0) {
-      alert('No transactions to export.');
+      toast.warning('No transactions to export.');
       return;
     }
 
@@ -37,10 +38,10 @@ export default function ExcelExport({ expenses }) {
       // Export file
       XLSX.writeFile(workbook, filename);
 
-      alert(`Successfully exported ${expenses.length} transactions!`);
+      toast.success(`Successfully exported ${expenses.length} transactions!`);
     } catch (error) {
       console.error('Error exporting to Excel:', error);
-      alert('Error exporting data. Please try again.');
+      toast.error('Error exporting data. Please try again.');
     }
   };
 

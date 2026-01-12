@@ -19,6 +19,8 @@ if (typeof window !== 'undefined') {
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { MdSync, MdCloud, MdCloudOff } from 'react-icons/md';
+import { RiShieldKeyholeLine } from 'react-icons/ri';
+import { toast } from 'react-toastify';
 
 
 
@@ -36,6 +38,16 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
   const { importCredentials } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+    // Sincronización automática a Google Sheets para TODO el CRUD:
+    // Se ejecuta cuando expenses cambia (agregar, editar, eliminar, importar, limpiar)
+    // Solo sincroniza si está conectado, no está cargando, y hay Sheet ID
+    // Para evitar bucles infinitos al importar o limpiar, se puede agregar un control opcional si es necesario
+    useEffect(() => {
+      if (isConnected && !isLoading && sheetId) {
+        syncToSheets();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [expenses]);
   // Credenciales Google API directas
   const GOOGLE_API_KEY = 'AIzaSyA8CdD8RP4HjD1zN00-qp3dxAD4OKzvWb4';
   const GOOGLE_CLIENT_ID = '838075476269-oi80gmn3ej0f2trhpcqm4e9f4rqf8em8.apps.googleusercontent.com';
@@ -86,12 +98,12 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
 
   const handleAuth = () => {
     if (!gapiReady) {
-      alert('Google API is still loading. Please wait a moment.');
+      toast.warning('Google API is still loading. Please wait a moment.');
       return;
     }
 
     if (!window.google) {
-      alert('Google Identity Services not loaded. Please refresh the page.');
+      toast.error('Google Identity Services not loaded. Please refresh the page.');
       return;
     }
 
@@ -105,7 +117,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
         callback: (response) => {
           if (response.error) {
             console.error('Error getting token:', response);
-            alert('Failed to connect to Google Sheets. Please try again.');
+            toast.error('Failed to connect to Google Sheets. Please try again.');
             setIsLoading(false);
             return;
           }
@@ -113,7 +125,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
           // Token received successfully
           setIsConnected(true);
           setIsLoading(false);
-          alert('Successfully connected to Google Sheets!');
+          toast.success('Successfully connected to Google Sheets!');
         },
       });
 
@@ -121,7 +133,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
       client.requestAccessToken();
     } catch (error) {
       console.error('Error connecting to Google Sheets:', error);
-      alert('Failed to connect to Google Sheets. Please check your configuration.');
+      toast.error('Failed to connect to Google Sheets. Please check your configuration.');
       setIsLoading(false);
     }
   };
@@ -130,22 +142,22 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
     if (window.google && window.google.accounts.oauth2) {
       window.google.accounts.oauth2.revoke(window.gapi.client.getToken().access_token, () => {
         setIsConnected(false);
-        alert('Disconnected from Google Sheets');
+        toast.info('Disconnected from Google Sheets');
       });
     } else {
       setIsConnected(false);
-      alert('Disconnected from Google Sheets');
+      toast.info('Disconnected from Google Sheets');
     }
   };
 
   const syncToSheets = async () => {
     if (!sheetId) {
-      alert('Please enter a Google Sheet ID');
+      toast.warning('Please enter a Google Sheet ID');
       return;
     }
 
     if (expenses.length === 0) {
-      alert('No transactions to sync');
+      toast.warning('No transactions to sync');
       return;
     }
 
@@ -166,10 +178,10 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
         resource: { values }
       });
 
-      alert(`Successfully synced ${expenses.length} transactions to Google Sheets!`);
+      toast.success(`Successfully synced ${expenses.length} transactions to Google Sheets!`);
     } catch (error) {
       console.error('Error syncing to Google Sheets:', error);
-      alert('Failed to sync to Google Sheets. Make sure the Sheet ID is correct and you have edit permissions.');
+      toast.error('Failed to sync to Google Sheets. Make sure the Sheet ID is correct and you have edit permissions.');
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +190,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
   // Pull expenses
   const syncFromSheets = async () => {
     if (!sheetId) {
-      alert('Please enter a Google Sheet ID');
+      toast.warning('Please enter a Google Sheet ID');
       return;
     }
 
@@ -192,7 +204,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
       });
       const rows = response.result.values;
       if (!rows || rows.length === 0) {
-        alert('No data found in the sheet');
+        toast.warning('No data found in the sheet');
         return;
       }
       const importedExpenses = rows.slice(1)
@@ -203,14 +215,14 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
           date: String(row[2]).trim()
         }));
       if (importedExpenses.length === 0) {
-        alert('No valid transactions found in the sheet');
+        toast.warning('No valid transactions found in the sheet');
         return;
       }
       onImport(importedExpenses);
-      alert(`Successfully imported ${importedExpenses.length} transactions from Google Sheets!`);
+      toast.success(`Successfully imported ${importedExpenses.length} transactions from Google Sheets!`);
     } catch (error) {
       console.error('Error importing from Google Sheets:', error);
-      alert('Failed to import from Google Sheets. Make sure the Sheet ID is correct and you have view permissions.');
+      toast.error('Failed to import from Google Sheets. Make sure the Sheet ID is correct and you have view permissions.');
     } finally {
       setIsLoading(false);
     }
@@ -219,7 +231,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
   // Pull credentials
   const syncCredentialsFromSheet = async () => {
     if (!sheetId) {
-      alert('Please enter a Google Sheet ID');
+      toast.warning('Please enter a Google Sheet ID');
       return;
     }
     try {
@@ -231,14 +243,14 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
       });
       const rows = response.result.values;
       if (!rows || rows.length === 0) {
-        alert('No credentials found in Sheet2');
+        toast.warning('No credentials found in Sheet2');
         return;
       }
       importCredentials(rows);
-      alert(`Imported ${rows.length - 1} credentials from Sheet2!`);
+      toast.success(`Imported ${rows.length - 1} credentials from Sheet2!`);
     } catch (error) {
       console.error('Error importing credentials:', error);
-      alert('Failed to import credentials. Make sure Sheet2 exists and is formatted correctly.');
+      toast.error('Failed to import credentials. Make sure Sheet2 exists and is formatted correctly.');
     } finally {
       setIsLoading(false);
     }
@@ -275,48 +287,7 @@ export default function GoogleSheetsSync({ expenses, onImport }) {
         </button>
       ) : (
         <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-semibold text-primary-300 uppercase tracking-wider mb-2">
-              Sheet ID
-            </label>
-            <input
-              type="text"
-              placeholder="Paste your Google Sheet ID"
-              value={sheetId}
-              onChange={(e) => setSheetId(e.target.value)}
-              className="input-modern w-full text-sm"
-            />
-            <p className="text-primary-500 text-xs mt-1">
-              Found in the sheet URL after /d/
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={syncToSheets}
-              disabled={isLoading || !sheetId}
-              className="btn-secondary text-xs py-2 flex items-center justify-center gap-1"
-            >
-              <MdSync className="w-4 h-4" />
-              <span>Push</span>
-            </button>
-            <button
-              onClick={syncFromSheets}
-              disabled={isLoading || !sheetId}
-              className="btn-secondary text-xs py-2 flex items-center justify-center gap-1"
-            >
-              <MdSync className="w-4 h-4 rotate-180" />
-              <span>Pull</span>
-            </button>
-            <button
-              onClick={syncCredentialsFromSheet}
-              disabled={isLoading || !sheetId}
-              className="btn-secondary text-xs py-2 flex items-center justify-center gap-1"
-            >
-              <MdShieldKeyholeLine className="w-4 h-4" />
-              <span>Creds</span>
-            </button>
-          </div>
+          {/* Sin controles manuales: solo conexión automática */}
 
           <button
             onClick={handleDisconnect}

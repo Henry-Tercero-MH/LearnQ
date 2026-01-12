@@ -62,7 +62,7 @@ export default function MoneyFlowChart({ expenses }) {
           weight: 'bold',
         },
         callbacks: {
-          label: (context) => `$${context.parsed.y.toFixed(2)}`,
+          label: (context) => `Q${context.parsed.y.toFixed(2)}`,
         },
       },
     },
@@ -89,7 +89,7 @@ export default function MoneyFlowChart({ expenses }) {
             size: 11,
             weight: '500',
           },
-          callback: (value) => `$${value}`,
+          callback: (value) => `Q${value}`,
         },
       },
     },

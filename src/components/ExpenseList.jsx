@@ -156,7 +156,7 @@ export default function ExpenseList({ expenses }) {
                 ) : (
                   <>
                     <p className="text-xl font-bold text-accent-gold tracking-tight">
-                      ${expense.amount.toFixed(2)}
+                      Q{expense.amount.toFixed(2)}
                     </p>
                     <div className="flex gap-2 mt-1">
                       <button

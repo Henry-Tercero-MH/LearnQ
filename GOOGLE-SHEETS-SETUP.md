@@ -170,26 +170,19 @@ Aparecerá un modal con:
 
 ## Paso 5: Configurar la Aplicación
 
-### 5.1 Crear Archivo .env
+### 5.1 Verificar Credenciales en el Código
 
-1. En la carpeta raíz de tu proyecto, crea un archivo llamado `.env`
-2. Copia el contenido del archivo `.env.example`
-3. Pega tus credenciales:
+Las credenciales ya están configuradas en `src/components/GoogleSheetsSync.jsx`:
 
-```env
-VITE_GOOGLE_API_KEY=AIzaSy... (tu API Key del Paso 4.1)
-VITE_GOOGLE_CLIENT_ID=123456789-abc...apps.googleusercontent.com (tu Client ID del Paso 4.2)
+```javascript
+// Líneas 29-30 y 51-52
+const GOOGLE_API_KEY = 'AIzaSyA8CdD8RP4HjD1zN00-qp3dxAD4OKzvWb4';
+const GOOGLE_CLIENT_ID = '838075476269-oi80gmn3ej0f2trhpcqm4e9f4rqf8em8.apps.googleusercontent.com';
 ```
 
-### 5.2 Reiniciar el Servidor
+✅ **Ya están listas para usar**
 
-1. Detén el servidor de desarrollo (Ctrl+C en la terminal)
-2. Inicia nuevamente:
-   ```bash
-   npm run dev
-   ```
-
-### 5.3 Verificar Configuración
+### 5.2 Verificar Configuración
 
 1. Abre la aplicación en tu navegador
 2. Inicia sesión (admin/admin)
@@ -268,9 +261,9 @@ VITE_GOOGLE_CLIENT_ID=123456789-abc...apps.googleusercontent.com (tu Client ID d
 **Causa:** Credenciales incorrectas o no configuradas
 
 **Solución:**
-1. Verifica que el archivo `.env` existe
+1. Verifica que las credenciales están en `GoogleSheetsSync.jsx` (líneas 29-30 y 51-52)
 2. Verifica que las credenciales son correctas
-3. Verifica que no hay espacios extras en las credenciales
+3. Limpia la caché del navegador y recarga
 4. Reinicia el servidor (`npm run dev`)
 5. Limpia la caché del navegador (Ctrl+Shift+Delete)
 
@@ -371,9 +364,9 @@ Tu Google Sheet debe tener exactamente este formato:
 
 ### 🔒 Seguridad
 
-- **No compartas tu API Key**: Manténla privada
-- **No subas el archivo .env a Git**: Ya está en `.gitignore`
-- **Usa usuario de prueba**: Mientras la app no esté publicada, solo usuarios autorizados pueden conectarse
+- **API Key y Client ID públicos**: Es seguro tenerlos en el código (OAuth protege tu cuenta)
+- **OAuth consent screen**: Solo usuarios autorizados pueden usar la app
+- **Test users**: Agrega emails específicos que puedan conectarse
 
 ### 📊 Colaboración
 

@@ -12,6 +12,8 @@ import ExcelExport from './components/ExcelExport';
 import GoogleSheetsSync from './components/GoogleSheetsSync';
 import { HiArrowRightOnRectangle } from 'react-icons/hi2';
 import { MdTrendingUp, MdAccountBalance, MdInsights } from 'react-icons/md';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function MainApp() {
   const { logout } = useAuth();
@@ -107,7 +109,7 @@ function MainApp() {
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <p className="text-primary-400 text-xs uppercase tracking-wider mb-1">Total Spent</p>
               <p className="text-2xl font-bold text-accent-gold">
-                ${totalForDay.toFixed(2)}
+                Q{totalForDay.toFixed(2)}
               </p>
             </div>
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
@@ -121,7 +123,7 @@ function MainApp() {
                     : 'text-red-400'
                   : 'text-primary-600'
               }`}>
-                {budgetRemaining !== null ? `$${budgetRemaining.toFixed(2)}` : '---'}
+                {budgetRemaining !== null ? `Q${budgetRemaining.toFixed(2)}` : '---'}
               </p>
             </div>
           </div>
@@ -148,7 +150,7 @@ function MainApp() {
             <div className="bg-linear-to-br from-accent-gold/20 to-accent-bronze/10 rounded-xl px-4 py-2 border border-accent-gold/20">
               <p className="text-xs text-primary-400 uppercase tracking-wider">Total</p>
               <p className="text-2xl font-bold text-accent-gold">
-                ${totalAllExpenses.toFixed(2)}
+                Q{totalAllExpenses.toFixed(2)}
               </p>
             </div>
           </div>
@@ -213,6 +215,29 @@ export default function App() {
     <AuthProvider>
       <FinanceProvider>
         <AppContent />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+          style={{
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+          toastStyle={{
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(212, 175, 55, 0.2)',
+            borderRadius: '12px',
+            color: '#e2e8f0',
+          }}
+        />
       </FinanceProvider>
     </AuthProvider>
   );

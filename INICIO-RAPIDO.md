@@ -2,15 +2,13 @@
 
 ## ✅ Configuración Completada
 
-Tus credenciales ya están configuradas en el archivo `.env`:
-- ✅ API Key configurada
-- ✅ Client ID configurado
+Tus credenciales ya están configuradas directamente en el código:
+- ✅ API Key configurada en `GoogleSheetsSync.jsx`
+- ✅ Client ID configurado en `GoogleSheetsSync.jsx`
 
 ## 📝 Pasos para Probar
 
-### 1. Reiniciar el Servidor
-
-Si el servidor está corriendo, deténlo con `Ctrl+C` y vuelve a iniciarlo:
+### 1. Iniciar el Servidor
 
 ```bash
 npm run dev
@@ -82,9 +80,9 @@ Crea una sheet con este formato:
 
 ### ❌ "Failed to connect to Google Sheets"
 
-1. Verifica que reiniciaste el servidor después de crear `.env`
-2. Limpia la caché del navegador (Ctrl+Shift+Delete)
-3. Recarga la página (F5)
+1. Limpia la caché del navegador (Ctrl+Shift+Delete)
+2. Recarga la página (F5)
+3. Verifica la consola del navegador por errores
 
 ### ❌ "Google hasn't verified this app" y no puedo continuar
 
@@ -131,10 +129,10 @@ Business, Travel, Food, Transport, Entertainment, Health, Education, Clothing, H
 ## 🔒 Seguridad
 
 ⚠️ **IMPORTANTE**:
-- Tu archivo `.env` contiene credenciales sensibles
-- Ya está protegido en `.gitignore`
-- **NO lo compartas** con nadie
-- **NO lo subas** a Git o repositorios públicos
+- Las credenciales están en el código en `GoogleSheetsSync.jsx`
+- Estas son credenciales públicas de OAuth (seguras para cliente)
+- Google protege tu cuenta con OAuth consent screen
+- Solo usuarios autorizados pueden acceder a tus Sheets
 
 ---
 

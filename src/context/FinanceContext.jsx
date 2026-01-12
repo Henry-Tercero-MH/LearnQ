@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const FinanceContext = createContext();
 
@@ -23,9 +24,36 @@ export function FinanceProvider({ children }) {
   };
 
   const clearAllExpenses = () => {
-    if (window.confirm('Are you sure you want to delete all transactions? This action cannot be undone.')) {
-      setExpenses([]);
-    }
+    const ConfirmToast = ({ closeToast }) => (
+      <div>
+        <p className="mb-3 font-semibold">Are you sure you want to delete all transactions?</p>
+        <p className="mb-4 text-sm opacity-80">This action cannot be undone.</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setExpenses([]);
+              toast.success('All transactions deleted');
+              closeToast();
+            }}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white text-sm font-medium transition-colors"
+          >
+            Delete All
+          </button>
+          <button
+            onClick={closeToast}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white text-sm font-medium transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+
+    toast.warn(ConfirmToast, {
+      autoClose: false,
+      closeButton: false,
+      draggable: false,
+    });
   };
 
   return (

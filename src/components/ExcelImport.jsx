@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { MdUploadFile } from 'react-icons/md';
+import { toast } from 'react-toastify';
 
 export default function ExcelImport({ onImport }) {
   const fileInputRef = useRef(null);
@@ -28,12 +29,12 @@ export default function ExcelImport({ onImport }) {
           }));
 
         if (expenses.length === 0) {
-          alert('No valid data found in Excel file. Please check the format.');
+          toast.warning('No valid data found in Excel file. Please check the format.');
           return;
         }
 
         onImport(expenses);
-        alert(`Successfully imported ${expenses.length} transactions!`);
+        toast.success(`Successfully imported ${expenses.length} transactions!`);
 
         // Reset file input
         if (fileInputRef.current) {
@@ -41,7 +42,7 @@ export default function ExcelImport({ onImport }) {
         }
       } catch (error) {
         console.error('Error reading Excel file:', error);
-        alert('Error reading Excel file. Please check the format and try again.');
+        toast.error('Error reading Excel file. Please check the format and try again.');
       }
     };
 
